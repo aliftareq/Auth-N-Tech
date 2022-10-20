@@ -1,7 +1,74 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useContext } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { AuthContext } from '../Context/UseContext'
+
+
 
 const Register = () => {
+
+  const navigate = useNavigate()
+
+  const { setUser, createUser, updateName, varifyUser, handlerGoogleSignIn } = useContext(AuthContext)
+
+  //email and password authentication.
+  const handleSignUp = (e) => {
+    e.preventDefault()
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    //-------------------------------------createuser start-----------------------------------------------
+    // create func called
+    createUser(email, password)
+      .then(result => {
+        toast.success('Succesfully Registered!!!')
+        setUser(result.user)
+        console.log(result.user);
+        navigate('/profile')
+        //---------------------------update start--------------------------------
+        //update func called
+        updateName(name)
+          .then(() => {
+            toast.success('updated name')
+            //-------------------verify start--------------------
+            //verification func called.
+            varifyUser()
+              .then(() => {
+                toast.success('A verification mail sent to your Account')
+              })
+              .catch(error => {
+                toast.error(error.message)
+              });
+            //---------------------varify end-------------------
+          })
+          .catch(error => {
+            toast.error(error.message)
+          });
+        //----------------------------update end-----------------------------
+      })
+      .catch(error => {
+        toast.error(error.message)
+        console.log(error);
+      })
+    //------------------------------------createUser end-------------------------------------------
+
+    console.log(name, email, password, 'SignUp');
+  }
+
+  //google signInAuthentication
+  const signInWithGoogle = () => {
+    handlerGoogleSignIn()
+      .then(result => {
+        setUser(result.user)
+        toast.success('Successfully signed with Google.')
+        navigate('/profile')
+      })
+      .catch(error => {
+        toast.error(error.message)
+      })
+  }
+
   return (
     <div className='flex justify-center items-center pt-8'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -10,6 +77,7 @@ const Register = () => {
           <p className='text-sm text-gray-400'>Create a new account</p>
         </div>
         <form
+          onSubmit={handleSignUp}
           noValidate=''
           action=''
           className='space-y-12 ng-untouched ng-pristine ng-valid'
@@ -26,6 +94,7 @@ const Register = () => {
                 placeholder='Enter Your Name Here'
                 className='w-full px-3 py-2 border rounded-md border-gray-300 focus:border-gray-900 bg-gray-200 text-gray-900'
                 data-temp-mail-org='0'
+                required
               />
             </div>
             <div>
@@ -39,6 +108,7 @@ const Register = () => {
                 placeholder='Enter Your Email Here'
                 className='w-full px-3 py-2 border rounded-md border-gray-300 focus:border-gray-900 bg-gray-200 text-gray-900'
                 data-temp-mail-org='0'
+                required
               />
             </div>
             <div>
@@ -53,6 +123,7 @@ const Register = () => {
                 id='password'
                 placeholder='*******'
                 className='w-full px-3 py-2 border rounded-md border-gray-300 bg-gray-200 focus:border-gray-900 text-gray-900'
+                required
               />
             </div>
           </div>
@@ -75,7 +146,7 @@ const Register = () => {
           <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
         </div>
         <div className='flex justify-center space-x-4'>
-          <button aria-label='Log in with Google' className='p-3 rounded-sm'>
+          <button onClick={signInWithGoogle} aria-label='Log in with Google' className='p-3 rounded-sm'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 32 32'
